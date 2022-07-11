@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/react-csv-to-sql/static/css/main.c50ecffb.css",
-    "main.js": "/react-csv-to-sql/static/js/main.3def5088.js",
+    "main.js": "/react-csv-to-sql/static/js/main.1f339d24.js",
     "static/js/787.cbe2d079.chunk.js": "/react-csv-to-sql/static/js/787.cbe2d079.chunk.js",
     "index.html": "/react-csv-to-sql/index.html",
     "main.c50ecffb.css.map": "/react-csv-to-sql/static/css/main.c50ecffb.css.map",
-    "main.3def5088.js.map": "/react-csv-to-sql/static/js/main.3def5088.js.map",
+    "main.1f339d24.js.map": "/react-csv-to-sql/static/js/main.1f339d24.js.map",
     "787.cbe2d079.chunk.js.map": "/react-csv-to-sql/static/js/787.cbe2d079.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c50ecffb.css",
-    "static/js/main.3def5088.js"
+    "static/js/main.1f339d24.js"
   ]
 }
