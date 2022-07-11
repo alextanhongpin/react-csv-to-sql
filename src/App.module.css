@@ -1,0 +1,22 @@
+.container {
+  padding: 1rem 1.5rem;
+}
+.output {
+  display: grid;
+  grid-column-gap: 1rem;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+}
+
+.section {
+  display: grid;
+  grid-column-gap: 1rem;
+  grid-template-columns: max-content 1fr;
+}
+
+.header {
+  display: grid;
+  grid-column-gap: 1rem;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+}
