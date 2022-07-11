@@ -5,6 +5,7 @@ import type { ParseResult, ParseError, ParseMeta } from "papaparse";
 import { getParser } from "types/csv";
 import type { Parser, ColumnType } from "types/csv";
 import { copyTextToClipboard } from "ports/clipboard";
+import { useDebounce } from "ports/debounce";
 import { valuesStmt } from "types/sql";
 import Table from "components/Table";
 import classes from "./App.module.css";
@@ -24,6 +25,7 @@ function App() {
   const formRef = useRef<HTMLFormElement>(null);
   const [copied, setCopied] = useState(false);
   const [sql, setSQL] = useState("");
+  const debouncedCSV = useDebounce(csv, 250);
 
   const { data, errors, meta } = useMemo(() => {
     const { data, errors, meta } = parsedResult ?? {};
@@ -45,14 +47,21 @@ function App() {
 
     const formData = new FormData(formRef.current);
 
-    const columns: string[] = (meta?.fields ?? []).map((field: string) => {
-      const column = formData.get(field);
-      if (!column) {
-        throw new Error(`FormError: "${field}" not found`);
-      }
+    const columns: string[] = (meta?.fields ?? [])
+      .map((field: string) => {
+        const column = formData.get(field);
+        if (!column) {
+          throw new Error(`FormError: "${field}" not found`);
+        }
 
-      return column as string;
-    });
+        const included = formData.get(`${field}.include`);
+        if (!included) {
+          return "";
+        }
+
+        return column as string;
+      })
+      .filter(Boolean);
 
     const values: string[] = data.map((row) => {
       const values = Object.entries(row).map(([key, value]): string => {
@@ -60,6 +69,9 @@ function App() {
         if (!type) {
           throw new Error(`FormError: key "${key}.type" not found`);
         }
+
+        const included = formData.get(`${key}.include`);
+        if (!included) return "";
 
         const strict = true;
         const parser: Parser = getParser(type, strict);
@@ -73,7 +85,7 @@ function App() {
         }
       });
 
-      return `(${values.join(", ")})`;
+      return `(${values.filter((value) => value !== "").join(", ")})`;
     });
 
     const sql = valuesStmt(columns, values);
@@ -86,12 +98,12 @@ function App() {
   };
 
   useEffect(() => {
-    const result = parse(csv, {
+    const result = parse(debouncedCSV, {
       header: true,
     });
 
     setParsedResult(result);
-  }, [csv]);
+  }, [debouncedCSV]);
 
   useEffect(() => {
     if (!copied) {
@@ -152,6 +164,7 @@ function App() {
                       <th>CSV Name</th>
                       <th>SQL Name</th>
                       <th>Data Type</th>
+                      <th>Include?</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -174,6 +187,13 @@ function App() {
                               <option>int</option>
                               <option>bool</option>
                             </select>
+                          </th>
+                          <th>
+                            <input
+                              type="checkbox"
+                              name={`${field}.include`}
+                              defaultChecked
+                            />
                           </th>
                         </tr>
                       );

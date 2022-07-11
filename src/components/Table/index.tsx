@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { ParseResult, ParseError, ParseMeta } from "papaparse";
 import classes from "./index.module.css";
 
@@ -23,42 +23,53 @@ export default function CSVTable({
   meta = defaultParseMeta,
   errors = [],
 }: Props): JSX.Element | null {
-  if (errors?.length) {
-    const list = errors.map((err: ParseError) => {
-      return `row=${err.row + 1} error=${err.message} data=${JSON.stringify(
-        data[err.row]
-      )}`;
-    });
+  switch (errors.length) {
+    case 0:
+      return <Table data={data} />;
+    default:
+      if (errors[0].row === undefined) {
+        return <div>{errors[0]?.message}</div>;
+      }
 
-    return (
-      <ul>
-        {list.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
-    );
+      const dataWithError = errors.map((err: ParseError) => {
+        const row = data[err.row];
+        return {
+          row: err.row + 1,
+          error: err.message,
+          ...row,
+        };
+      });
+
+      return <Table data={dataWithError} />;
   }
+}
+
+function Table({ data = [] }: { data: any[] }) {
+  const columns = useMemo(() => {
+    if (!data) return [];
+    return Object.keys(data[0] ?? {});
+  }, [data]);
+
+  if (!data?.length) return null;
 
   return (
     <table className={classes.table}>
       <thead className={classes.thead}>
         <tr>
-          {meta?.fields?.map((field: string) => (
-            <th key={field}>{field}</th>
+          {columns.map((column: string) => (
+            <th key={column}>{column}</th>
           ))}
         </tr>
       </thead>
 
       <tbody>
-        {data.map((row) => {
-          const columns = meta?.fields?.map(
-            (field: string) => (row as any)[field]
-          );
+        {data.map((row, index) => {
+          const values = Object.values(row);
 
           return (
-            <tr>
-              {columns?.map((col) => (
-                <td>{col}</td>
+            <tr key={index}>
+              {values?.map((val: any) => (
+                <td key={val}>{val}</td>
               ))}
             </tr>
           );
